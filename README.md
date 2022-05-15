@@ -1,7 +1,7 @@
 # Mk8dx-CT-modpack-maker
 
 This is a work in progress way for people to easily compile supported tracks into modpacks without having to manually rename all of the files or have any knowledge of how to mod the game.  
-I only started playing custom tracks very recently so maybe a tool like this already exists but in case it doesnt here it is.  
+I only started playing custom tracks very recently so maybe a tool like this already exists but in case it doesnt here it is. So far i have had no issues playing custom tracks compiled over random tracks but i have not done extensive testing so there could be issues with this idea that i am not aware of yet. 
   
 To make a modpack all you need is a recent version of python (tested on python 3.10).  
 -Clone this repo  
