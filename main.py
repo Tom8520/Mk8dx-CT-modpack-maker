@@ -3,6 +3,7 @@ import shutil
 from constants import *
 import json
 import random
+from bars import *
 
 path = os.getcwd()
 
@@ -66,6 +67,35 @@ def compile(path, tracks, name):
     file.write(lines)
     file.close()
 
+    #copy audio files
+
+    os.mkdir(f"{path}/Audio/Static")
+    os.mkdir(f"{path}/Audio/Resource")
+    os.mkdir(f"{path}/Audio/Resource/Stream")
+
+    first = True
+
+    for (courseName, over) in tracks:
+        data = json.loads(open(f"{opath}/Courses/{courseName}/data.json", "r").read())
+
+        if data ["Audio"] == "Yes":
+            if first:
+                first = False
+                shutil.copy(f"{opath}/Courses/{courseName}/Audio/Static/BGM.bars", f"{path}/Audio/Static/BGM.bars")
+
+            for file in os.listdir(f"{opath}/Courses/{courseName}/Audio/Resource/Stream"):
+                shutil.copy(f"{opath}/Courses/{courseName}/Audio/Resource/Stream/{file}", f"{path}/Audio/Resource/Stream/{file}")
+                os.rename(f"{path}/Audio/Resource/Stream/{file}", f"{path}/Audio/Resource/Stream/{file.replace('[ACN]', TRACK_TO_AUDIO [over])}")
+
+                if not "BGM.bars" in os.listdir(f"{opath}/Courses/{courseName}/Audio/Static"):
+                    continue
+
+                origCourse = TRACK_TO_AUDIO [data ["Original_Course"]]
+                fileName = file.split(".") [0]
+
+                replaceBARS(f"{path}/Audio/Static/BGM.bars", f"{opath}/Courses/{courseName}/Audio/Static/BGM.bars", fileName.replace('[ACN]', TRACK_TO_AUDIO [over]), fileName.replace("[ACN]", origCourse))
+
+
 
 pack = [[x, ""] for x in TRACK_NAMES]
 
@@ -82,7 +112,7 @@ while True:
 
     if t == "random":
         random.shuffle(customTracks)
-        for x in range(len(pack)):
+        for x in range(min(len(pack), len(customTracks))):
             pack [x][1] = customTracks [x]
         continue
     if t == "":
