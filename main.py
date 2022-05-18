@@ -107,7 +107,7 @@ while True:
         print(f"{cnt}: {x [0]} -> {x [1]}")
         cnt += 1
 
-    print("Enter the track you want to override: ")
+    print("Enter the track you want to override, type random for a random modpack or press enter to compile your modpack: ")
     t = input()
 
     if t == "random":
