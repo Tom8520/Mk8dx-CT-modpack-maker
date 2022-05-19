@@ -79,7 +79,7 @@ def compile(path, tracks, name):
         data = json.loads(open(f"{opath}/Courses/{courseName}/data.json", "r").read())
 
         if data ["Audio"] == "Yes":
-            if first:
+            if first and "BGM.bars" in os.listdir(f"{opath}/Courses/{courseName}/Audio/Static"):
                 first = False
                 shutil.copy(f"{opath}/Courses/{courseName}/Audio/Static/BGM.bars", f"{path}/Audio/Static/BGM.bars")
 
@@ -95,7 +95,10 @@ def compile(path, tracks, name):
 
                 replaceBARS(f"{path}/Audio/Static/BGM.bars", f"{opath}/Courses/{courseName}/Audio/Static/BGM.bars", fileName.replace('[ACN]', TRACK_TO_AUDIO [over]), fileName.replace("[ACN]", origCourse))
 
+for track in os.listdir(f"{path}/Courses"):
+    data = json.loads(open(f"{path}/Courses/{track}/data.json", "r").read())
 
+    print(f"{track} By {data ['Creator']} ({data ['Link']})")
 
 pack = [[x, ""] for x in TRACK_NAMES]
 
