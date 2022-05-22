@@ -31,7 +31,7 @@ TRACK_TO_AUDIO = {"G3ds_PackunSlider": "3DS_PACKUN_SLIDER", "G64_KinopioHighway"
                   "D3ds_NeoBowserCity": "3DS_NEOBOWSERCITY", "Dagb_RibbonRoad": "GBA_RIBBONROAD", "Du_BigBlue": "WU_BIGBLUE", "G3ds_DKJungle": "3DS_DK_JUNGLE", "G3ds_MusicPark": "3DS_MUSIC_PARK", "G64_PeachCircuit": "N64_PEACH_CIRCUIT",
                   "G64_RainbowRoad": "N64_RAINBOW_ROAD", "G64_YoshiValley": "N64_YOSHI_VALLEY", "Ggc_DryDryDesert": "GC_DRY_DRY_DESERT", "Ggc_SherbetLand": "GC_SHERBET_LAND", "Gsfc_DonutsPlain3": "SFC_DONUTS_PLAIN3", "Gu_BowserCastle": "WU_BOWSER_CASTLE",
                   "Gu_RainbowRoad": "WU_RAINBOW_ROAD", "Gu_WaterPark": "WU_WATER_PARK", "Gwii_GrumbleVolcano": "WII_GRUMBLE_VOLCANO", "Gwii_MooMooMeadows": "WII_MOO_MOO_MEADOWS", "Gds_WarioStadium": "DS_WARIO_STADIUM", "Gds_TickTockClock": "DS_TICK_TOCK_CLOCK",
-                  "Du_Animal": "WU_ANIMAL"}
+                  "Du_Animal_Autumn": "WU_ANIMALAUTUMN", "Du_Animal_Spring": "WU_ANIMALSPRING", "Du_Animal_Summer": "WU_ANIMALSUMMER", "Du_Animal_Winter": "WU_ANIMALWINTER"}
 
 TRACK_TO_NAME = {"G3ds_PackunSlider": "3DS Piranha Plant Slide", "G64_KinopioHighway": "N64 Toad's Turnpike", "Gagb_MarioCircuit": "GBA Mario Circuit", "Gds_PukupukuBeach": "DS Cheep Cheep Beach", "Gu_Airport": "Sunshine Airport", "Gu_Cake": "Sweet Sweet Canyon",
                  "Gu_City": "Toad Harbor", "Gu_Cloud": "Cloudtop Cruise", "Gu_Desert": "Bone-Dry Dunes", "Gu_DossunIseki": "Thwomp Ruins", "Gu_Expert": "Shy Guy Falls", "Gu_FirstCircuit": "Mario Kart Stadium", "Gu_HorrorHouse": "Twisted Mansion",

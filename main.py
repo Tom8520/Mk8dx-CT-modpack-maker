@@ -1,152 +1,331 @@
-import os
-import shutil
-from constants import *
-import json
 import random
-from bars import *
+import sys
+from PyQt6.QtWidgets import *
+from PyQt6.QtGui import *
+from PyQt6.QtCore import *
+from constants import *
+import os
+import json
+import datetime
+import compile
 
-path = os.getcwd()
+global tracks
+tracks = {}
 
-def compile(path, tracks, name):
-    #create file structure
-    opath = path
-    os.mkdir(f"{path}/{name}")
-    path += f"/{name}"
+class Main(QMainWindow):
+    def __init__(self):
+        super().__init__()
 
-    os.mkdir(f"{path}/romfs")
-    path += "/romfs"
+        self.initUI()
 
-    os.mkdir(f"{path}/Course")
-    os.mkdir(f"{path}/UI")
-    os.mkdir(f"{path}/Audio")
-    os.mkdir(f"{path}/MapObj")
+    def initUI(self):
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QColor(50, 50, 50))
+        self.setPalette(p)
 
-    #copy and rename course files
+        QToolTip.setFont(QFont('SansSerif', 10))
 
-    for (courseName, over) in tracks:
-        shutil.copytree(f"{opath}/Courses/{courseName}/Course/[CN]", f"{path}/Course/[CN]")
-        os.rename(f"{path}/Course/[CN]", f"{path}/Course/{over}")
+        self.updateTracks()
 
-        for file in os.listdir(f"{path}/Course/{over}"):
-            if "[CN]" in file:
-                os.rename(f"{path}/Course/{over}/{file}", f"{path}/Course/{over}/{file.replace('[CN]', over)}")
+        self.setGeometry(300, 300, 1600, 1000)
+        self.setWindowTitle('Mk8dx Modpack Maker')
+        self.show()
 
-    #copy and rename UI files
+    def updateTracks(self):
+        self.mainWidget = QWidget(self)
+        self.mainLayout = QVBoxLayout()
 
-    os.mkdir(f"{path}/UI/cmn")
-    os.mkdir(f"{path}/UI/cmn/menu")
-    os.mkdir(f"{path}/UI/cmn/ending")
+        self.layout = QGridLayout()
+        self.layout.setContentsMargins(20, 20, 20, 20)
+        self.layout.setSpacing(10)
 
-    for (courseName, over) in tracks:
-        if "UI" in os.listdir(f"{opath}/Courses/{courseName}"):
-            if "menu" in os.listdir(f"{opath}/Courses/{courseName}/UI/cmn"):
-                shutil.copy(f"{opath}/Courses/{courseName}/UI/cmn/menu/ym_CoursePict_[CN]_00^u.bntx", f"{path}/UI/cmn/menu/ym_CoursePict_{over}_00^u.bntx")
-            if "ending" in os.listdir(f"{opath}/Courses/{courseName}/UI/cmn"):
-                shutil.copy(f"{opath}/Courses/{courseName}/UI/cmn/ending/ym_AwardBG_[CN]_00^o.bntx", f"{path}/UI/cmn/ending/ym_AwardBG_{over}_00^o.bntx")
+        for i in range(len(TRACK_NAMES) + 12):
+            if i % 5 == 0:
+                pic = QLabel(self)
+                pic.setContentsMargins(40, 0, 40, 0)
+                pic.setPixmap(QPixmap(f"assets/cups/cup_{i//5}.png"))
+                pic.show()
+            else:
+                name = QLabel(self)
+                pic = QLabel(self)
+                name.setFont(QFont('SansSerif', 20))
+                name.setStyleSheet("color: #bbbbbb")
 
-    #copy map object files
+                if not CUP_TRACKS [CUPS [i//5]][i%5-1] in tracks:
+                    name.setText(CUP_TRACKS [CUPS [i//5]][i%5-1])
+                    pic.setPixmap(QPixmap("assets/NoTrackSelected.png"))
+                else:
+                    name.setText(tracks [CUP_TRACKS [CUPS [i//5]][i%5-1]])
+                    pic.setPixmap(QPixmap(f"Courses/{tracks [CUP_TRACKS[CUPS[i // 5]][i % 5 - 1]]}/icon.jpg").scaled(300, 200))
 
-    for (courseName, over) in tracks:
-        if "MapObj" in os.listdir(f"{opath}/Courses/{courseName}"):
-            for item in os.listdir(f"{opath}/Courses/{courseName}/MapObj"):
-                if item in os.listdir(f"{path}/MapObj"):
-                    print(f"FATAL ERROR: compiling {courseName} over {over} - MapObj {item} cannot be used twice")
-                    print("Exiting compilation")
-                    return
-                shutil.copytree(f"{opath}/Courses/{courseName}/MapObj/{item}", f"{path}/MapObj/{item}")
+                pic.mouseReleaseEvent = (lambda x: lambda y: self.chooseTrack(x))(CUP_TRACKS [CUPS [i//5]][i%5-1])
+                pic.show()
+                name.show()
 
-    #create credits file
+                self.layout.addWidget(name, 2 * (i // 5) + 1, i % 5)
 
-    file = open(f"{path}/../credits.txt", "w+")
-    lines = ""
-    for ( courseName, over) in tracks:
-        data = json.loads(open(f"{opath}/Courses/{courseName}/data.json", "r").read())
-        lines += courseName + ":\n"
-        lines += f"Creator: {data ['Creator']}\n"
-        lines += f"Original link: {data ['Link']}\n\n"
-    file.write(lines)
-    file.close()
+            self.layout.addWidget(pic, 2 * (i//5), i%5)
 
-    #copy audio files
+        self.widget = QWidget()
+        self.widget.setLayout(self.layout)
 
-    os.mkdir(f"{path}/Audio/Static")
-    os.mkdir(f"{path}/Audio/Resource")
-    os.mkdir(f"{path}/Audio/Resource/Stream")
+        self.scroll = QScrollArea()
 
-    first = True
+        self.scroll.setWidget(self.widget)
 
-    for (courseName, over) in tracks:
-        data = json.loads(open(f"{opath}/Courses/{courseName}/data.json", "r").read())
+        self.bottomMenu = QWidget(self)
+        self.bottomMenuLayout = QHBoxLayout()
 
-        if data ["Audio"] == "Yes":
-            if first and "BGM.bars" in os.listdir(f"{opath}/Courses/{courseName}/Audio/Static"):
-                first = False
-                shutil.copy(f"{opath}/Courses/{courseName}/Audio/Static/BGM.bars", f"{path}/Audio/Static/BGM.bars")
+        self.compileButton = QPushButton("Compile", self)
+        self.compileButton.clicked.connect(self.compileModpack)
+        self.bottomMenuLayout.addWidget(self.compileButton)
 
-            for file in os.listdir(f"{opath}/Courses/{courseName}/Audio/Resource/Stream"):
-                shutil.copy(f"{opath}/Courses/{courseName}/Audio/Resource/Stream/{file}", f"{path}/Audio/Resource/Stream/{file}")
-                os.rename(f"{path}/Audio/Resource/Stream/{file}", f"{path}/Audio/Resource/Stream/{file.replace('[ACN]', TRACK_TO_AUDIO [over])}")
+        self.randomiseButton = QPushButton("Randomise", self)
+        self.randomiseButton.clicked.connect(self.randomise)
+        self.bottomMenuLayout.addWidget(self.randomiseButton)
 
-                if not "BGM.bars" in os.listdir(f"{opath}/Courses/{courseName}/Audio/Static"):
-                    continue
+        self.resetButton = QPushButton("Reset", self)
+        self.resetButton.clicked.connect(self.reset)
+        self.bottomMenuLayout.addWidget(self.resetButton)
 
-                origCourse = TRACK_TO_AUDIO [data ["Original_Course"]]
-                fileName = file.split(".") [0]
+        self.bottomMenu.setLayout(self.bottomMenuLayout)
 
-                replaceBARS(f"{path}/Audio/Static/BGM.bars", f"{opath}/Courses/{courseName}/Audio/Static/BGM.bars", fileName.replace('[ACN]', TRACK_TO_AUDIO [over]), fileName.replace("[ACN]", origCourse))
+        self.mainLayout.addWidget(self.scroll)
+        self.mainLayout.addWidget(self.bottomMenu)
 
-for track in os.listdir(f"{path}/Courses"):
-    data = json.loads(open(f"{path}/Courses/{track}/data.json", "r").read())
+        self.mainWidget.setLayout(self.mainLayout)
 
-    print(f"{track} By {data ['Creator']} ({data ['Link']})")
+        self.setCentralWidget(self.mainWidget)
 
-pack = [[x, ""] for x in TRACK_NAMES]
+    def getTrackIndex(self, track):
+        i = 0
+        for key, val in CUP_TRACKS.items():
+            for t in range(len(val)):
+                if val [t] == track:
+                    return i + 2*t + 1
+            i += 9
+        return -1
 
-customTracks = os.listdir("Courses/")
+    def refresh(self, over, ct):
+        index = self.getTrackIndex(over)
 
-while True:
-    cnt = 0
-    for x in pack:
-        print(f"{cnt}: {x [0]} -> {x [1]}")
-        cnt += 1
+        name = self.layout.itemAt(index).widget()
+        img = self.layout.itemAt(index+1).widget()
 
-    print("Enter the track you want to override, type random for a random modpack or press enter to compile your modpack: ")
-    t = input()
+        if ct is None:
+            name.setText(over)
+            img.setPixmap(QPixmap("assets/NoTrackSelected.png"))
+        else:
+            name.setText(ct)
+            img.setPixmap(QPixmap(f"Courses/{ct}/icon.jpg").scaled(300, 200))
 
-    if t == "random":
-        random.shuffle(customTracks)
-        for x in range(min(len(pack), len(customTracks))):
-            pack [x][1] = customTracks [x]
-        continue
-    if t == "":
-        break
+    def chooseTrack(self, over):
 
-    cnt = 0
-    for x in customTracks:
-        print(f"{cnt}: {x}")
-        cnt += 1
+        selector = TrackSelector()
 
-    print("Enter the track you want to port: ")
-    ct = input()
+        if selector.ct:
+            tracks [over] = selector.ct
+        else:
+            if over in tracks:
+                tracks.pop(over)
 
-    if ct == "":
-        pack [int(t)][1] = ""
-    else:
-        pack [int(t)][1] = customTracks [int(ct)]
+        self.refresh(over, selector.ct)
 
-tracks = []
-for x in pack:
-    if x [1] != "":
-        tracks.append(x [::-1])
+    def randomise(self):
+        path = os.getcwd()
 
-print("Enter the name to save the modpack: ")
-name = input()
+        cts = os.listdir(f"{path}/Courses")
 
-print("Compiling modpack...")
+        random.shuffle(cts)
 
-compile(path, tracks, name)
+        for cup, trks in CUP_TRACKS.items():
+            for trk in trks:
+                tracks [trk] = cts [0]
+                self.refresh(trk, cts [0])
+                cts.pop(0)
 
-print("Modpack generated!")
+    def reset(self):
+        for cup, trks in CUP_TRACKS.items():
+            for trk in trks:
+                self.refresh(trk, None)
+
+    def compileModpack(self):
+
+        text, ok = QInputDialog.getText(self, 'Compile modpack',
+                                        'Enter the modpack name:')
+
+        if not ok:
+            return
+
+        trks = []
+        for key, val in tracks.items():
+            trks.append([val, NAME_TO_TRACK [key]])
+
+        compile.compile(os.getcwd(), trks, text)
 
 
 
+class TrackSelector(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.ct = None
+
+        self.cts = self.getTracks()
+
+        self.initUI(True)
+
+    def getTracks(self):
+        path = os.getcwd()
+
+        cts = []
+
+        for file in os.listdir(f"{path}/Courses"):
+            data = json.loads(open(f"{path}/Courses/{file}/data.json", "r").read())
+            cts.append([file, data ["Creator"], data ["Audio"], data ["UI"], data ["Released"]])
+
+        return cts
+
+    def refresh(self, ct):
+        index = 5 * self.cts.index(ct)
+
+        for x in range(self.layout.count()):
+            w = self.layout.itemAt(x).widget()
+            w.setStyleSheet("background-color: #aaaaaa" if x >= index and x < index+5 else "color: #dddddd")
+
+    def callback(self, track):
+        self.ct = track [0]
+        self.refresh(track)
+
+
+    def accept(self):
+        if self.ct == None:
+            return
+
+        super().accept()
+
+    def reject(self):
+        self.ct = None
+        super().reject()
+
+    def sort(self, field):
+        if field == 4:
+            key = lambda i: datetime.datetime.strptime(i [4], "%d/%m/%Y")
+        else:
+            key = lambda i: i [field]
+
+        self.cts = sorted(self.cts, key=key)
+
+        for x in range(self.headerLayout.count()):
+            w = self.headerLayout.itemAt(x).widget()
+            w.setStyleSheet("background-color: #aaaaaa" if x == field else "color: #dddddd")
+
+        for x in range(self.layout.count()):
+            self.layout.removeWidget(self.layout.itemAt(0).widget())
+
+        i = 0
+        for track in self.cts:
+            for j in range(5):
+                name = QLabel(self)
+                name.setStyleSheet("color: #dddddd")
+                name.mouseReleaseEvent = (lambda x: lambda y: self.callback(x))(track)
+
+                text = track[j]
+                while len(text) < 35:
+                    text += " "
+
+                if len(text) > 35:
+                    text = text[:35]
+
+                name.setText(text)
+                name.show()
+
+                self.layout.addWidget(name, i, j)
+
+            i += 1
+
+    def initUI(self, first=False):
+
+        QBtn = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QColor(50, 50, 50))
+        self.setPalette(p)
+
+        self.widget = QWidget()
+
+        self.layout = QGridLayout()
+
+        i = 0
+        for track in self.cts:
+            for j in range(5):
+                name = QLabel(self)
+                name.setStyleSheet("color: #dddddd")
+                name.mouseReleaseEvent = (lambda x: lambda y: self.callback(x))(track)
+
+                text = track [j]
+                while len(text) < 35:
+                    text += " "
+
+                if len(text) > 35:
+                    text = text [:35]
+
+                name.setText(text)
+                name.show()
+
+                self.layout.addWidget(name, i, j)
+
+            i += 1
+
+        self.widget.setLayout(self.layout)
+
+        self.scroll = QScrollArea()
+        self.scroll.setWidget(self.widget)
+
+        if first:
+            self.mainLayout = QVBoxLayout()
+            self.setLayout(self.mainLayout)
+
+        self.headerRow = QWidget()
+        self.headerLayout = QHBoxLayout()
+
+        for text in ["Name", "Creator", "Custom music", "UI", "Release date"]:
+            name = QLabel(self)
+            name.setText(text)
+            name.setStyleSheet("color: #dddddd")
+            name.mouseReleaseEvent = (lambda x: lambda y: self.sort(x))(["Name", "Creator", "Custom music", "UI", "Release date"].index(text))
+            name.show()
+
+            self.headerLayout.addWidget(name)
+
+        self.headerRow.setLayout(self.headerLayout)
+
+        self.mainLayout.addWidget(self.headerRow)
+        self.mainLayout.addWidget(self.scroll)
+        self.mainLayout.addWidget(self.buttonBox)
+
+        if first:
+            self.setFixedWidth(800)
+            self.setFixedHeight(500)
+
+            self.exec()
+
+
+
+
+
+
+def main():
+
+    app = QApplication(sys.argv)
+
+    main = Main()
+
+    sys.exit(app.exec())
+
+if __name__ == "__main__":
+    main()
