@@ -8,5 +8,5 @@ To make a modpack:
 - Install pyqt6 (pip install pyqt6)  
 - Run the main.py file  
   
-There are currently 53 supported tracks but more will be added as more of them are released but if you think i have missed a good one then send me the link on discord (Nathan_#1987) and i will add it.  
+There are currently 58 supported tracks but more will be added as more of them are released but if you think i have missed a good one then send me the link on discord (Nathan_#1987) and i will add it.  
 For details of exactly which tracks are supported and who created them check https://gamebanana.com/mods/377720  

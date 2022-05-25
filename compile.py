@@ -113,6 +113,10 @@ def compile(path, tracks, name):
 
                     replaceBARS(f"{path}/Audio/Static/BGM.bars", f"{opath}/Courses/{courseName}/Audio/Static/BGM.bars", fileName.replace('[ACN]', TRACK_TO_AUDIO [name]), fileName.replace("[ACN]", origCourse))
 
+    #generate message.SARC file
+
+
+
 """path = os.getcwd()
 
 for file in os.listdir(f"{path}/Courses"):
