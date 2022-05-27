@@ -145,9 +145,11 @@ class Main(QMainWindow):
                 cts.pop(0)
 
     def reset(self):
+        global tracks
         for cup, trks in CUP_TRACKS.items():
             for trk in trks:
                 self.refresh(trk, None)
+                tracks = {}
 
     def compileModpack(self):
 
