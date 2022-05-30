@@ -8,6 +8,7 @@ import os
 import json
 import datetime
 import compile
+import download
 
 global tracks
 tracks = {}
@@ -88,6 +89,10 @@ class Main(QMainWindow):
         self.resetButton.clicked.connect(self.reset)
         self.bottomMenuLayout.addWidget(self.resetButton)
 
+        self.updateButton = QPushButton("Update", self)
+        self.updateButton.clicked.connect(download.updateTracks)
+        self.bottomMenuLayout.addWidget(self.updateButton)
+
         self.bottomMenu.setLayout(self.bottomMenuLayout)
 
         self.mainLayout.addWidget(self.scroll)
@@ -159,9 +164,14 @@ class Main(QMainWindow):
         if not ok:
             return
 
+        path = os.getcwd()
+
         trks = []
         for key, val in tracks.items():
             trks.append([val, NAME_TO_TRACK [key]])
+
+            if not "Course" in os.listdir(f"{path}/Courses/{val}"):
+                download.downloadTrack(val)
 
         compile.compile(os.getcwd(), trks, text)
 

@@ -117,10 +117,10 @@ def compile(path, tracks, name):
 
 
 
-path = os.getcwd()
+"""path = os.getcwd()
 
 for file in os.listdir(f"{path}/Courses"):
     data = json.loads(open(f"{path}/Courses/{file}/data.json", "r").read())
 
-    print(f"{file} By {data ['Creator']} ({data ['Link']})")
+    print(f"{file} By {data ['Creator']} ({data ['Link']})")"""
 
